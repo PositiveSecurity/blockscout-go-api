@@ -232,8 +232,10 @@ type Epoch struct {
 	VotingFraction                     string `json:"votingFraction"`
 }
 
+// URL API in the format "https://instance_base_url/api"
 var blockScoutApiUrl string
 
+// Custom errors
 var (
 	ErrBigInt          = errors.New("failed to convert string to big.Int")
 	ErrBigFloat        = errors.New("failed to convert string to big.Float")
@@ -249,7 +251,7 @@ func SetBlockScoutApiUrl(url string) {
 
 func sendApiRpcRequest(url string, response *Response) error {
 
-	fmt.Println(url)
+	//fmt.Println(url)
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -347,6 +349,7 @@ func SaveToFile(filePath string, content string) error {
 	return nil
 }
 
+// Convert WEI to ETH
 func WeiToEther(wei *big.Int) (*big.Float, error) {
 
 	if wei.Sign() == -1 {
