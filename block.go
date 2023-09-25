@@ -1,6 +1,7 @@
 package blockscout
 
 import (
+	"fmt"
 	"math/big"
 	"strconv"
 )
@@ -15,6 +16,7 @@ func GetCurrentBlockRpcApi() (*big.Int, error) {
 	err := sendApiRpcRequest(url, &response)
 
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 

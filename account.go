@@ -1,7 +1,6 @@
 package blockscout
 
 import (
-	"errors"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -22,7 +21,7 @@ func GetEthBalance(address string, block uint64) (*big.Float, error) {
 	}
 
 	if response.Error == "Balance not found" {
-		return nil, errors.New("Balance not found")
+		return nil, ErrBalanceNotFound
 	}
 
 	ethBalance, err := hexStringToBigInt(response.Result.(string))
@@ -31,7 +30,7 @@ func GetEthBalance(address string, block uint64) (*big.Float, error) {
 		return nil, err
 	}
 
-	balance, err := weiToEther(ethBalance)
+	balance, err := WeiToEther(ethBalance)
 
 	if err != nil {
 		return nil, err
@@ -63,7 +62,7 @@ func GetBalance(address string, block uint64) (*big.Float, error) {
 	if err != nil {
 		return nil, err
 	}
-	balance, err := weiToEther(ethBalance)
+	balance, err := WeiToEther(ethBalance)
 	if err != nil {
 		return nil, err
 	}

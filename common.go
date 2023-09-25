@@ -8,8 +8,6 @@ import (
 	"math/big"
 	"net/http"
 	"os"
-	"strconv"
-	"time"
 )
 
 var moduleValues = map[string]string{
@@ -236,6 +234,15 @@ type Epoch struct {
 
 var blockScoutApiUrl string
 
+var (
+	ErrBigInt          = errors.New("failed to convert string to big.Int")
+	ErrBigFloat        = errors.New("failed to convert string to big.Float")
+	ErrNegativeWei     = errors.New("a negative value of wei is not allowed")
+	ErrBigIntTooLarge  = errors.New("*big.Int is too large to fit in a uint64")
+	ErrNegativeBigInt  = errors.New("cannot convert negative *big.Int to uint64")
+	ErrBalanceNotFound = errors.New("balance not found")
+)
+
 func SetBlockScoutApiUrl(url string) {
 	blockScoutApiUrl = url
 }
@@ -265,7 +272,7 @@ func sendApiRpcRequest(url string, response *Response) error {
 		return err
 	}
 
-	err = checkMessage(response.Message)
+	err = checkError(response)
 
 	if err != nil {
 		return err
@@ -274,11 +281,14 @@ func sendApiRpcRequest(url string, response *Response) error {
 	return nil
 }
 
-func checkMessage(mes string) error {
-	if mes != "OK" {
-		return errors.New(mes)
+func checkError(response *Response) error {
+	if response.Message == "OK" || response.Message == "" {
+		return nil
+	} else if response.Error == "" {
+		return nil
+	} else {
+		return errors.New("error response")
 	}
-	return nil
 }
 
 func sendApiRpcRequestResult(url string, result any) error {
@@ -308,7 +318,7 @@ func sendApiRpcRequestResult(url string, result any) error {
 		return err
 	}
 
-	err = checkMessage(response.Message)
+	err = checkError(&response)
 
 	if err != nil {
 		return err
@@ -329,70 +339,6 @@ func sendApiRpcRequestResult(url string, result any) error {
 	return nil
 }
 
-func weiToEther(wei *big.Int) (*big.Float, error) {
-
-	if wei.Sign() == -1 {
-		return nil, errors.New("A negative value of wei is not allowed")
-	}
-
-	divisor := new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
-	ether := new(big.Float).SetInt(wei)
-	ether.Quo(ether, new(big.Float).SetInt(divisor))
-
-	return ether, nil
-}
-
-func hexStringToBigInt(str string) (*big.Int, error) {
-	str = str[2:]
-	bigInt := new(big.Int)
-	bigInt, ok := bigInt.SetString(str, 16)
-
-	if !ok {
-		return nil, errors.New("Failed to convert the string to a big.Int")
-	}
-
-	return bigInt, nil
-}
-
-func decStringToBigInt(str string) (*big.Int, error) {
-	var bigintVal big.Int
-
-	_, success := bigintVal.SetString(str, 10)
-
-	if !success {
-		return nil, errors.New("Failed to convert the string to a big.Int")
-	}
-
-	return &bigintVal, nil
-}
-
-func decStringToBigFloat(str string) (*big.Float, error) {
-	var floatValue big.Float
-	_, success := floatValue.SetString(str)
-
-	if !success {
-		return nil, errors.New("Failed to convert string to big.Float")
-	}
-
-	return &floatValue, nil
-}
-
-func decStringToUint(str string) (uint, error) {
-	intValue, err := strconv.ParseUint(str, 10, 0)
-	if err != nil {
-		return 0, err
-	}
-	return uint(intValue), nil
-}
-
-func marshalToBytes(result any) ([]byte, error) {
-	resultBytes, err := json.Marshal(result)
-	if err != nil {
-		return nil, err
-	}
-	return resultBytes, nil
-}
-
 func SaveToFile(filePath string, content string) error {
 	err := os.WriteFile(filePath, []byte(content), 0644)
 	if err != nil {
@@ -401,7 +347,15 @@ func SaveToFile(filePath string, content string) error {
 	return nil
 }
 
-func UnixTimestampToNormal(unixTimestamp int64) string {
-	t := time.Unix(unixTimestamp, 0)
-	return t.Format("2006-01-02 15:04:05")
+func WeiToEther(wei *big.Int) (*big.Float, error) {
+
+	if wei.Sign() == -1 {
+		return nil, ErrNegativeWei
+	}
+
+	divisor := new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
+	ether := new(big.Float).SetInt(wei)
+	ether.Quo(ether, new(big.Float).SetInt(divisor))
+
+	return ether, nil
 }
