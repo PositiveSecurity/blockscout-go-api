@@ -1,6 +1,7 @@
 # blockscout-api
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/PositiveSecurity/blockscout-go-api.svg)](https://pkg.go.dev/github.com/PositiveSecurity/blockscout-go-api)
+[![Go Report Card](https://goreportcard.com/badge/github.com/PositiveSecurity/blockscout-go-api)](https://goreportcard.com/report/github.com/PositiveSecurity/blockscout-go-api)
 
 Golang-client for [blockscout.com](https://www.blockscout.com/) (and its family), with almost complete implementation (accounts, transactions, tokens, contracts, blocks, epoch)
 
